@@ -11,12 +11,10 @@
 
 static void show_prompt(void) {
     char dir[64];
-    char user[64];
     char host[64];
     getcwd(dir, 64);
-    getlogin_r(user, 64);
     gethostname(host, 64);
-    printf("%s@%s:%s$ ", user, host, dir);
+    printf("%s:~%s$ ", host, dir);
 
     fflush (stdout);
 }
@@ -30,13 +28,12 @@ int main(int argc, char *argv[]) {
     while (!quit) {
         show_prompt();
         pipe = parse_pipeline(input);
-
         /* Hay que salir luego de ejecutar? */
         quit = parser_at_eof(input);
-        /*
-         * COMPLETAR
-         *
-         */
+        if(pipe != NULL){
+            execute_pipeline(pipe);
+            pipeline_destroy(pipe); pipe = NULL;
+        }
     }
     parser_destroy(input); input = NULL;
     return EXIT_SUCCESS;

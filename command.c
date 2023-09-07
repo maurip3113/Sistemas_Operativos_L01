@@ -28,7 +28,7 @@ scommand scommand_destroy(scommand self){
     // free(self->in);
     // free(self->out); //---> ¿Porque liberas estos punteros? 
                      //      En ningun momento reservaste memoria, creo que simplemente hay que asignarles NULL
-    free(self); //Reservamos memoria para self
+    free(self); 
     self = NULL;
     assert(self == NULL);
     return self;
@@ -67,7 +67,7 @@ bool scommand_is_empty(const scommand self){
 unsigned int scommand_length(const scommand self){
     assert(self != NULL);  
     unsigned int size = g_slist_length(self -> comms_array);
-//  assert (size == 0 && scommand_is_empty(self)); // Esto no tiene sentido. 
+    assert ((size == 0 || scommand_is_empty(self)) == scommand_is_empty(self));  //(scommand_length(self)==0) --> scommand_is_empty(self)
     return size;
 }
 
@@ -97,6 +97,8 @@ char * scommand_to_string(const scommand self){
     char *result = strdup("");  
     for (unsigned int i = 0; i < scommand_length(self); i++){
         result = strmerge(result, g_slist_nth_data(self->comms_array, i));
+        result = strmerge(result, " ");
+
     }
     if (self -> in != NULL){
         result = strmerge(result, " < ");
@@ -146,20 +148,19 @@ void pipeline_push_back(pipeline self, scommand sc) {
 
 void pipeline_pop_front(pipeline self){
     assert(self != NULL && !pipeline_is_empty(self));
-    // self->scomms_array = g_slist_append(self->scomms_array, g_slist_nth_data(self->scomms_array, 0)); Esto agregaria otro elemento, lo que precisamos es quitar elementos.
     self->scomms_array = g_slist_remove(self->scomms_array, g_slist_nth_data(self->scomms_array, 0));
 }
 
 
 void pipeline_set_wait(pipeline self, const bool w){
     assert(self != NULL);
-    self -> background = w;
+    self->background = w;
 }
 
 
 bool pipeline_is_empty(const pipeline self){
     assert(self != NULL);
-    bool r_value = (self->scomms_array == NULL) && pipeline_length(self) == 0;
+    bool r_value = (self->scomms_array == NULL); 
     return r_value;
 }
 
@@ -167,7 +168,7 @@ bool pipeline_is_empty(const pipeline self){
 unsigned int pipeline_length(const pipeline self){
     assert(self != NULL);
     unsigned int size = g_slist_length(self->scomms_array);
-//  assert (size == 0 && pipeline_is_empty(self)); // Esto no tiene sentido. 
+    assert ((size == 0 || pipeline_is_empty(self)) == pipeline_is_empty(self)); //(pipeline_length(self)==0) --> pipeline_is_empty(self)  
     return size;
 }
 
@@ -183,7 +184,7 @@ scommand pipeline_front(const pipeline self){
 
 bool pipeline_get_wait(const pipeline self){
     assert(self != NULL);
-    return self -> background;
+    return self->background;
 }
 
 

@@ -119,20 +119,20 @@ END_TEST
 
 START_TEST (test_empty)
 {
-    scommand s = NULL;
+    //scommand s = NULL;
 
     init_parser("\n");
     output = parse_pipeline(parser);
-    //ck_assert_msg (output==NULL, NULL);
+    ck_assert_msg (output==NULL, NULL);
 
     /* Esto debería generar un pipeline de un elemento, con un comando
      * vacío adentro FIXME: Me parece que no es cierto
      */
-    ck_assert_msg (pipeline_length (output) == 1, NULL);
-    s = pipeline_front (output);
-    ck_assert_msg (scommand_length (s) == 0, NULL);
+    //ck_assert_msg (pipeline_length (output) == 1, NULL);
+    //s = pipeline_front (output);
+    //ck_assert_msg (scommand_length (s) == 0, NULL);
     /* Y no es en background */
-    ck_assert_msg (pipeline_get_wait (output), NULL);
+    //ck_assert_msg (pipeline_get_wait (output), NULL);
     /*
      * Según como hagan el parser, una alternativa es hacer que esto genere un
      * pipeline de 0 elementos. Si lo prefieren lo pueden cambiar, pero tienen

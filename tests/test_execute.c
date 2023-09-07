@@ -7,6 +7,8 @@
 #include "syscall_mock.h"
 #include "../execute.h"
 
+#include <stdio.h>
+
 /* Precondiciones */
 
 START_TEST (test_pipeline_null)
@@ -265,6 +267,7 @@ START_TEST (test_pipe2_parent)
     );
 
     /* Creo un pipe para los dos hijos */
+    printf("mock_counter_pipe: %d\n", mock_counter_pipe); //Por como esta implementado el execute_pipeline, el mock_counter_pipe entra dos veces al ciclo por lo tanto se hacen 2 pipes.
     ck_assert_msg (mock_counter_pipe==1, NULL);
     ck_assert_msg (mock_counter_open==0, NULL);
     /* Solo están conectados stdin/stdout/stderr */
