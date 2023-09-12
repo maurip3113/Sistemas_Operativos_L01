@@ -18,7 +18,7 @@ static void builtin_cd(scommand cmd){
         //Si hay argumentos, vamos al path indicado.
         int result = chdir(scommand_front(cmd));
         if(result != 0){
-            perror("ERROR ");
+            fprintf(stderr, "bash: cd: %s: No such file or directory \n", scommand_front(cmd));
         }
     }
 }

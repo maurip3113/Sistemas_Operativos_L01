@@ -24,11 +24,12 @@ scommand scommand_new(void){
 
 scommand scommand_destroy(scommand self){
     assert(self != NULL);
-    g_slist_free(self->comms_array);
-    // free(self->in);
-    // free(self->out); //---> ¿Porque liberas estos punteros? 
-                     //      En ningun momento reservaste memoria, creo que simplemente hay que asignarles NULL
-    free(self); 
+    g_slist_free_full(self->comms_array, free);
+    free(self->in);
+    free(self->out);
+    free(self);
+    self->in = NULL;
+    self->out = NULL;
     self = NULL;
     assert(self == NULL);
     return self;
@@ -38,23 +39,24 @@ void scommand_push_back(scommand self, char * argument){
     assert(self != NULL && argument != NULL);
     self->comms_array = g_slist_append(self -> comms_array, argument);
     assert(!scommand_is_empty(self));
-    
 }
 
 void scommand_pop_front(scommand self){
     assert(self != NULL && !scommand_is_empty(self));
-    self->comms_array = g_slist_remove(self -> comms_array, g_slist_nth_data(self->comms_array,0));
+    gpointer aux = g_slist_nth_data(self->comms_array, 0u);
+    self->comms_array = g_slist_remove(self -> comms_array, aux);
+    free(aux); aux = NULL;
 }
 
 void scommand_set_redir_in(scommand self, char * filename){
     assert(self != NULL);
+    free(self->in); self->in = NULL;
     self -> in = filename;
-    // self -> in puede ser NULL. Como está especificado en el .h
 }
 void scommand_set_redir_out(scommand self, char * filename){
     assert(self != NULL);
+    free(self->out); self->out = NULL;
     self -> out = filename;
-    // que self -> out esté en NULL significa que el output no está redirigido a ningún lado.
 }
 
 
@@ -93,12 +95,10 @@ char * scommand_get_redir_out(const scommand self){
 
 char * scommand_to_string(const scommand self){
     assert(self != NULL);
-    /* char *result = " ";  Esto no funciona porque al llamar free(result) -> Se rompe, no se porque :/ */
     char *result = strdup("");  
     for (unsigned int i = 0; i < scommand_length(self); i++){
         result = strmerge(result, g_slist_nth_data(self->comms_array, i));
         result = strmerge(result, " ");
-
     }
     if (self -> in != NULL){
         result = strmerge(result, " < ");
@@ -123,14 +123,18 @@ pipeline pipeline_new(void) {
     pipeline new = malloc(sizeof (struct pipeline_s));
     new->scomms_array = NULL;
     new->background = true;
-    assert(new != NULL && pipeline_is_empty(new) && pipeline_get_wait(new)); // Una de dos opciones: o renombrar background a "wait"
-    return new;                                                           // (porque para los del lab, este valor indica que el programa SÍ debe esperar; está en foreground)
-}                                                                         // o sino hacer que cada pipeline_get_wait() sea negado.
+    assert(new != NULL && pipeline_is_empty(new) && pipeline_get_wait(new));
+    return new;
+}
 
+static void scommand_destroy_void(void* self){
+    scommand s = self;
+    scommand_destroy(s);
+}
 
 pipeline pipeline_destroy(pipeline self) {
     assert(self != NULL);
-    g_slist_free(self->scomms_array);
+    g_slist_free_full(self->scomms_array, scommand_destroy_void);
     self->scomms_array = NULL;
     free(self);
     self = NULL;
@@ -148,7 +152,9 @@ void pipeline_push_back(pipeline self, scommand sc) {
 
 void pipeline_pop_front(pipeline self){
     assert(self != NULL && !pipeline_is_empty(self));
-    self->scomms_array = g_slist_remove(self->scomms_array, g_slist_nth_data(self->scomms_array, 0));
+    gpointer aux = g_slist_nth_data(self->scomms_array, 0);
+    self->scomms_array = g_slist_remove(self->scomms_array, aux);
+    scommand_destroy(aux); 
 }
 
 
@@ -190,10 +196,11 @@ bool pipeline_get_wait(const pipeline self){
 
 char * pipeline_to_string(const pipeline self){
     assert(self != NULL);
-    /* char *result = " ";  Esto no funciona porque al llamar free(result) -> Se rompe, no se porque :/ */
     char *result = strdup("");
     for (unsigned int i = 0; i < pipeline_length(self); i++){
-        result = strmerge(result, scommand_to_string(g_slist_nth_data(self->scomms_array, i)));
+        char *tmp = scommand_to_string(g_slist_nth_data(self->scomms_array, i));
+        result = strmerge(result, tmp);
+        free(tmp); tmp = NULL;
         if (i < pipeline_length(self) - 1){
             result = strmerge(result, " | ");
         }
@@ -204,3 +211,4 @@ char * pipeline_to_string(const pipeline self){
     assert((pipeline_is_empty(self) || pipeline_get_wait(self) || strlen(result) > 0));
     return result;
 }
+

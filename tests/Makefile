@@ -60,7 +60,7 @@ test-parsing: runner-parsing
 memtest: leaktest
 	# Ver http://live.gnome.org/Valgrind para explicacion de G_SLICE y G_DEBUG
 	# Uso el archivo glib.supp para no ver los errores internos de GLib2
-	G_SLICE=always-malloc G_DEBUG=gc-friendly valgrind --gen-suppressions=yes --leak-check=full --show-reachable=yes --suppressions=glib.supp ./$^
+	G_SLICE=always-malloc G_DEBUG=gc-friendly valgrind --leak-check=full --show-reachable=yes --suppressions=glib.supp ./$^
 
 .PHONY: all clean test test-command memtest
 

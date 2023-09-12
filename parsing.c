@@ -16,7 +16,7 @@ static scommand parse_scommand(Parser p) {
         parser_skip_blanks(p); 
         arg = parser_next_argument(p,&type); //guarda el tipo de argumento en arg
         
-        if (arg == NULL){                    // ESTO SUPONIENDO QUE parser_next_argument DEVUELVE NULL CUANDO SE ENCUENTRA CON UN PIPELINE O UN /N
+        if (arg == NULL){                    
             finished = true;
         } 
         else {  
@@ -28,15 +28,15 @@ static scommand parse_scommand(Parser p) {
                     scommand_set_redir_in(cmd, arg);       //define la redireccion de entrada
                 } else {                                          
                     scommand_destroy(cmd);                 //ERROR DE PARSEO(El primer argumento debe ser un comando)
-                    //return NULL
+
                 }
             } 
             else if (type == ARG_OUTPUT){
                 if (!scommand_is_empty(cmd)){ 
                     scommand_set_redir_out(cmd, arg);      //define la redireccion de salida
                 } else { 
-                    scommand_destroy(cmd);                 //ERROR DE PARSEO(El primer argumento debe ser un comando)
-                    //return NULL, no es necesario porque al destruir cmd, su valor es NULL y es lo que despues retornamos
+                    scommand_destroy(cmd);                 
+                    
                 }
             }
         }

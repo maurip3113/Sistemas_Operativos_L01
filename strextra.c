@@ -12,5 +12,6 @@ char * strmerge(char *s1, char *s2) {
     strncpy(merge, s1, len_s1);
     merge = strncat(merge, s2, len_s2);
     assert(merge != NULL && strlen(merge) == strlen(s1) + strlen(s2));
+    free(s1); //--->MODIFICADO PARA EVITAR MEMORY LEAKS
     return merge;
 }
